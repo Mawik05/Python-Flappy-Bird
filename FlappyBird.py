@@ -8,18 +8,18 @@ Normalfont = pygame.font.SysFont("arial", 25)
 clock = pygame.time.Clock()
 
 # Makes the screen for the game
-width = 1920
-height = 1080
-screen = pygame.display.set_mode([width, height])
+width = 1400
+height = 700
+screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
 # Get images
-birdImg = pygame.image.load("./FlappyBird/Images/FlappyBird.png")
+birdImg = pygame.image.load("./Images/FlappyBird.png")
 birdImg = pygame.transform.scale(birdImg, (64, 45)) # Original size: 630px * 444px
 
-backgroundImg = pygame.image.load("./FlappyBird/Images/Background.png")
-backgroundImg = pygame.transform.scale(backgroundImg, (height*1.79, height)) # Original size: 900px * 504px
+backgroundImg = pygame.image.load("./Images/Background.png")
+backgroundImg = pygame.transform.scale(backgroundImg, (height*1.785714285714286, height)) # Original size: 900px * 504px
 
-pipeImg = pygame.image.load("./FlappyBird/Images/Pipe.png")
+pipeImg = pygame.image.load("./Images/Pipe.png")
 pipeImgBottom = pygame.transform.scale(pipeImg, (65, 1000)) # Original size: 260px * 4000px
 pipeImgTop = pygame.transform.rotate(pipeImgBottom, 180)
 
@@ -110,6 +110,13 @@ while runGame:
         # Checks if user has closed the window
         if event.type == pygame.QUIT:
             runGame = False
+        
+        # Properly resize game to screen
+        if event.type == pygame.VIDEORESIZE:
+            if width != event.w or height != event.h:
+                width = event.w
+                height = event.h
+                backgroundImg = pygame.transform.scale(backgroundImg, (height*1.785714285714286, height))
 
         # Checks for mouse presses
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -137,7 +144,7 @@ while runGame:
             pipes.append(Pipe())
 
     # Get the time since last frame. Used to set a fixed framerate so the game runs at the same speed on all computers.
-    deltaTime = clock.tick(30)
+    deltaTime = clock.tick(60)
 
     # Draw background and move background
     screen.fill((255, 0, 0))
@@ -145,7 +152,7 @@ while runGame:
     backgroundPos -= 0.1 * deltaTime
     for i in range(math.ceil(width / (height*1.785714285714286+backgroundPos))):
         screen.blit(backgroundImg, (backgroundPos+(height*1.785714285714286*i), 0))
-    if backgroundPos < -height*1.785714285714286:
+    if backgroundPos < -height*1.785714285714286+2:
         backgroundPos = 0
 
 
