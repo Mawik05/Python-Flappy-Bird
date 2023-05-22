@@ -17,7 +17,8 @@ birdImg = pygame.image.load("./Images/FlappyBird.png")
 birdImg = pygame.transform.scale(birdImg, (64, 45)) # Original size: 630px * 444px
 
 backgroundImg = pygame.image.load("./Images/Background.png")
-backgroundImg = pygame.transform.scale(backgroundImg, (height*1.785714285714286, height)) # Original size: 900px * 504px
+backgroundWidth = height * 1.785714285714286
+backgroundImg = pygame.transform.scale(backgroundImg, (backgroundWidth, height)) # Original size: 900px * 504px
 
 pipeImg = pygame.image.load("./Images/Pipe.png")
 pipeImgBottom = pygame.transform.scale(pipeImg, (65, 1000)) # Original size: 260px * 4000px
@@ -71,8 +72,6 @@ class Pipe:
             gameOver()
 
         # Draw rectangles
-        # pygame.draw.rect(screen, (80, 200, 120), bottomRect)
-        # pygame.draw.rect(screen, (80, 200, 120), topRect)
         screen.blit(pipeImgBottom, bottomRect)
         screen.blit(pipeImgTop, topRect)
 
@@ -122,7 +121,8 @@ while runGame:
                 if height < 500:
                     height = 500
 
-                backgroundImg = pygame.transform.scale(backgroundImg, (height*1.785714285714286, height))
+                backgroundWidth = height * 1.785714285714286
+                backgroundImg = pygame.transform.scale(backgroundImg, (backgroundWidth, height))
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
         # Checks for mouse presses
@@ -131,7 +131,7 @@ while runGame:
 
         # Checks for key presses
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
                 birdYSpeed = jumpHeight
 
             if event.key == pygame.K_ESCAPE:
@@ -154,16 +154,16 @@ while runGame:
     deltaTime = clock.tick(60)
 
     # Draw background and move background
-    screen.fill((255, 0, 0))
+    screen.fill((0, 0, 0))
 
     backgroundPos -= 0.1 * deltaTime
-    for i in range(math.ceil(width / (height*1.785714285714286+backgroundPos))):
-        screen.blit(backgroundImg, (backgroundPos+(height*1.785714285714286*i)-i, 0))
-    if backgroundPos < -height*1.785714285714286+2:
+    for i in range(math.ceil(width / (backgroundWidth+backgroundPos))):
+        screen.blit(backgroundImg, (backgroundPos+(backgroundWidth*i)-i, 0))
+    if backgroundPos < -backgroundWidth+2:
         backgroundPos = 0
 
 
-    # Draw the bird and make it fall
+    # Draw, rotate and make the bird fall
     if not enableFreeze or not enableDebug:
         birdYPos = birdYPos + birdYSpeed * deltaTime
         birdYSpeed = birdYSpeed + gravity * deltaTime
