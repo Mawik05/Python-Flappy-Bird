@@ -114,9 +114,16 @@ while runGame:
         # Properly resize game to screen
         if event.type == pygame.VIDEORESIZE:
             if width != event.w or height != event.h:
-                width = event.w
-                height = event.h
+                width, height = event.size
+
+                if width < 500:
+                    width = 500
+
+                if height < 500:
+                    height = 500
+
                 backgroundImg = pygame.transform.scale(backgroundImg, (height*1.785714285714286, height))
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
         # Checks for mouse presses
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -151,7 +158,7 @@ while runGame:
 
     backgroundPos -= 0.1 * deltaTime
     for i in range(math.ceil(width / (height*1.785714285714286+backgroundPos))):
-        screen.blit(backgroundImg, (backgroundPos+(height*1.785714285714286*i), 0))
+        screen.blit(backgroundImg, (backgroundPos+(height*1.785714285714286*i)-i, 0))
     if backgroundPos < -height*1.785714285714286+2:
         backgroundPos = 0
 
