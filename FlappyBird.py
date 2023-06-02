@@ -26,7 +26,7 @@ pipeImgTop = pygame.transform.rotate(pipeImgBottom, 180)
 
 # Setting up some variables
 birdXPos = 250
-birdYPos = 250
+birdYPos = height/2-100
 birdYSpeed = 0
 gravity = 0.0015
 jumpHeight = -0.6
@@ -39,6 +39,10 @@ pipeGap = 200
 pipeSpeed = 0.25
 
 backgroundPos = 0
+
+enableMenu = True
+menuBobbingUp = True
+menuBobbingSpeed = 1.01
 
 enableDebug = False
 enableInvincibility = False
@@ -85,6 +89,9 @@ def gameOver():
     global birdYSpeed
     global score
     global highScore
+    global enableMenu
+
+    enableMenu = True
 
     birdYPos = 250
 
@@ -97,8 +104,17 @@ def gameOver():
         birdYSpeed = 0
 
 
-def writeText(content, pos):
-    screen.blit(Normalfont.render(content, 0, (0, 0, 0)), pos)
+def writeText(content, pos, center=False, textSize=0):
+    match(textSize):
+        case 0:
+            text = Normalfont.render(content, 0, (0, 0, 0))
+        case 1:
+            text = Boldfont.render(content, 0, (0, 0, 0))
+        
+    if center:
+        screen.blit(text, (pos[0] - (text.get_rect().width / 2), pos[1] - (text.get_rect().height) / 2))
+    else:
+        screen.blit(text, pos)
 
 
 # Game loop that will constantly run during the game
@@ -127,16 +143,19 @@ while runGame:
 
         # Checks for mouse presses
         if event.type == pygame.MOUSEBUTTONDOWN:
+            enableMenu = False
             birdYSpeed = jumpHeight
 
         # Checks for key presses
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
+                enableMenu = False
                 birdYSpeed = jumpHeight
 
             if event.key == pygame.K_ESCAPE:
                 runGame = False
 
+            # Debug Keys
             if event.key == pygame.K_F1:
                 enableDebug = not enableDebug
 
@@ -147,7 +166,7 @@ while runGame:
                 enableFreeze = not enableFreeze
 
         # Spawn new pipe
-        if event.type == MOVEEVENT:
+        if event.type == MOVEEVENT and not enableMenu:
             pipes.append(Pipe())
 
     # Get the time since last frame. Used to set a fixed framerate so the game runs at the same speed on all computers.
@@ -162,11 +181,34 @@ while runGame:
     if backgroundPos < -backgroundWidth+2:
         backgroundPos = 0
 
-
     # Draw, rotate and make the bird fall
-    if not enableFreeze or not enableDebug:
+    if not enableDebug or not enableFreeze:
         birdYPos = birdYPos + birdYSpeed * deltaTime
-        birdYSpeed = birdYSpeed + gravity * deltaTime
+        
+        if enableMenu:
+            if menuBobbingUp:
+                birdYSpeed *= menuBobbingSpeed
+
+                if birdYSpeed < -0.07:
+                    menuBobbingSpeed = 0.99
+
+                if birdYSpeed > -0.008:
+                    menuBobbingUp = False
+                    menuBobbingSpeed = 1.02
+                    birdYSpeed = 0.008
+            else:
+                birdYSpeed *= menuBobbingSpeed
+
+                if birdYSpeed > 0.07:
+                    menuBobbingSpeed = 0.99
+
+                if birdYSpeed < 0.008:
+                    menuBobbingUp = True
+                    menuBobbingSpeed = 1.02
+                    birdYSpeed = -0.008
+          
+        else:
+            birdYSpeed = birdYSpeed + gravity * deltaTime
 
     bird = pygame.Rect(birdXPos, birdYPos-25, 50, 50)
     new_birdImg = pygame.transform.rotate(birdImg, birdYSpeed * -50 + 10)
@@ -182,12 +224,22 @@ while runGame:
             score += 1
             pipe.increasedScore = True
 
-    # Display score
-    screen.blit(Boldfont.render(str(score), 0, (0, 0, 0)), (width/2, 100))
-    screen.blit(Normalfont.render("Score: " +
-                str(score), 0, (0, 0, 0)), (40, 40))
-    screen.blit(Normalfont.render("High Score: " +
-                str(highScore), 0, (0, 0, 0)), (40, 80))
+    if enableMenu:
+        # Display Menu
+        container = pygame.Surface((600, 600), pygame.SRCALPHA) # Container size
+        container.fill((0, 255, 255, 180)) # Container color
+        screen.blit(container, (width/2-300, height/2-300)) # Container position
+
+        writeText("Flappy Bird", (width/2, height/2-200), True, 1)
+        writeText("Jump to start!", (width/2, height/2), True)
+
+    else:
+        # Display score
+        screen.blit(Boldfont.render(str(score), 0, (0, 0, 0)), (width/2, 100))
+        screen.blit(Normalfont.render("Score: " +
+                    str(score), 0, (0, 0, 0)), (40, 40))
+        screen.blit(Normalfont.render("High Score: " +
+                    str(highScore), 0, (0, 0, 0)), (40, 80))
 
     # If bird is out of the screen, cause a game over
     if birdYPos > height+50 or birdYPos < -50:
