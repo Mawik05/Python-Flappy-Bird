@@ -3,8 +3,6 @@ import random
 import math
 
 pygame.init()
-Boldfont = pygame.font.SysFont("impact", 70)
-Normalfont = pygame.font.SysFont("arial", 25)
 clock = pygame.time.Clock()
 
 # Makes the screen for the game
@@ -40,6 +38,7 @@ pipeSpeed = 0.25
 
 backgroundPos = 0
 
+pauseGame = False
 enableMenu = True
 menuBobbingUp = True
 menuBobbingSpeed = 1.01
@@ -91,11 +90,11 @@ def gameOver():
     global highScore
     global enableMenu
 
-    enableMenu = True
-
     birdYPos = 250
 
-    if not enableInvincibility:
+    if not enableInvincibility or not enableDebug:
+        enableMenu = True
+
         if score > highScore:
             highScore = score
 
@@ -104,17 +103,43 @@ def gameOver():
         birdYSpeed = 0
 
 
-def writeText(content, pos, center=False, textSize=0):
-    match(textSize):
-        case 0:
-            text = Normalfont.render(content, 0, (0, 0, 0))
-        case 1:
-            text = Boldfont.render(content, 0, (0, 0, 0))
-        
+def writeText(content, pos, center=False, textSize=25, font="arial", color=(0, 0, 0)):
+    font = pygame.font.SysFont(font, textSize)
+    text = font.render(content, 0, color)
+
     if center:
         screen.blit(text, (pos[0] - (text.get_rect().width / 2), pos[1] - (text.get_rect().height) / 2))
     else:
         screen.blit(text, pos)
+
+def displayMenu():
+    container = pygame.Surface((600, 600), pygame.SRCALPHA) # Container size
+    container.fill((255, 255, 255, 240)) # Container color
+    screen.blit(container, (width/2-300, height/2-300)) # Container position
+
+    writeText("Flappy Bird", (width/2, height/2-200), True, 75, "impact")
+
+    container = pygame.Surface((200, 200), pygame.SRCALPHA) # Container size
+    container.fill((225, 193, 110, 180)) # Container color
+    screen.blit(container, (width/2-250, height/2-100)) # Container position
+    writeText("Recent Scores", (width/2-150, height/2-70), True)
+    pygame.draw.line(screen, (0, 0, 0), (width/2-240, height/2-50), (width/2-60, height/2-50))
+
+    writeText("1)   ---", (width/2-200, height/2-30))
+    writeText("2)   ---", (width/2-200, height/2+10))
+    writeText("3)   ---", (width/2-200, height/2+50))
+
+    container = pygame.Surface((200, 200), pygame.SRCALPHA) # Container size
+    container.fill((225, 193, 110, 180)) # Container color
+    screen.blit(container, (width/2+50, height/2-100)) # Container position
+    writeText("High Scores", (width/2+150, height/2-70), True)
+    pygame.draw.line(screen, (0, 0, 0), (width/2+60, height/2-50), (width/2+240, height/2-50))
+
+    writeText("1)   ---", (width/2+100, height/2-30))
+    writeText("2)   ---", (width/2+100, height/2+10))
+    writeText("3)   ---", (width/2+100, height/2+50))
+
+    writeText("Jump to start!", (width/2, height/2+200), True)
 
 
 # Game loop that will constantly run during the game
@@ -226,20 +251,13 @@ while runGame:
 
     if enableMenu:
         # Display Menu
-        container = pygame.Surface((600, 600), pygame.SRCALPHA) # Container size
-        container.fill((0, 255, 255, 180)) # Container color
-        screen.blit(container, (width/2-300, height/2-300)) # Container position
-
-        writeText("Flappy Bird", (width/2, height/2-200), True, 1)
-        writeText("Jump to start!", (width/2, height/2), True)
+        displayMenu()
 
     else:
         # Display score
-        screen.blit(Boldfont.render(str(score), 0, (0, 0, 0)), (width/2, 100))
-        screen.blit(Normalfont.render("Score: " +
-                    str(score), 0, (0, 0, 0)), (40, 40))
-        screen.blit(Normalfont.render("High Score: " +
-                    str(highScore), 0, (0, 0, 0)), (40, 80))
+        writeText(str(score), (width/2, 100), True, 75, "impact")
+        writeText("Score: " + str(score), (40, 40))
+        writeText("High Score: " + str(highScore), (40, 80))
 
     # If bird is out of the screen, cause a game over
     if birdYPos > height+50 or birdYPos < -50:
